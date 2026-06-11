@@ -149,8 +149,8 @@ export default function Home() {
               destination pipeline, then guides authorization before the run starts.
             </p>
             <div className="trust-row">
-              <span><ShieldCheck size={16} /> Gemini key stays in `.env`</span>
-              <span><Rocket size={16} /> Fivetran keys stay in `.env`</span>
+              <span><ShieldCheck size={16} /> Secure OAuth Authorization</span>
+              <span><Rocket size={16} /> Quick executable data pipeline diagram</span>
             </div>
           </div>
 
