@@ -262,7 +262,15 @@ function missingToolConfigs(nodes, configs) {
 
 function runMessage(result) {
   if (!result) return "Run started.";
-  if (result.mode === "live") return "Run started through Fivetran.";
+  if (result.mode === "live") {
+    const connection = result.results?.[0]?.created?.data;
+    const status = connection?.status || {};
+    const setupState = status.setup_state || "unknown";
+    const syncState = status.sync_state || "unknown";
+    const failedTest = connection?.setup_tests?.find((test) => test.status === "FAILED" || test.status === "JOB_FAILED");
+    const suffix = failedTest ? ` Setup test failed: ${failedTest.title || failedTest.message || "review Fivetran setup tests"}.` : "";
+    return `Run started through Fivetran. Setup: ${setupState}; sync: ${syncState}.${suffix}`;
+  }
   return result.message || "Run prepared.";
 }
 

@@ -4,9 +4,9 @@
   "description": "Syncy, an AI-assisted Fivetran pipeline builder.",
   "private": true,
   "scripts": {
-    "dev": "next dev --hostname 127.0.0.1",
+    "dev": "next dev --hostname 127.0.0.1 -p 5000",
     "build": "next build",
-    "start": "next start --hostname 127.0.0.1"
+    "start": "next start --hostname 127.0.0.1 -p 5000"
   },
   "keywords": [
     "automation",

@@ -55,18 +55,63 @@ export async function POST(request) {
 function buildConnectionPayload(node, body) {
   const service = node.data.toolId;
   const configs = parseJsonEnv(process.env.FIVETRAN_CONNECTOR_CONFIGS);
-  const config = configs[node.id] || configs[service] || {};
   const schemaPrefix = safeId(process.env.FIVETRAN_SCHEMA_PREFIX || "syncy").toLowerCase();
   const schemaService = safeId(service).toLowerCase();
+  const schema = `${schemaPrefix}_${schemaService}`;
+  const config = normalizeConnectionConfig(service, configs[node.id] || configs[service] || {}, schema);
   return {
     service,
     group_id: process.env.FIVETRAN_GROUP_ID || "<destination_group_id>",
-    schema: `${schemaPrefix}_${schemaService}`,
+    schema,
     schedule_type: "auto",
     sync_frequency: Number(process.env.FIVETRAN_SYNC_FREQUENCY || 60),
     paused: false,
     config
   };
+}
+
+function normalizeConnectionConfig(service, rawConfig, schema) {
+  const config = { ...rawConfig };
+  if (String(service).toLowerCase() !== "github") return config;
+  const token = config.access_token || config.personal_access_token || config.pat || config.token || config.github_token || "";
+  const pats = normalizeTokenList(config.pats || config.personal_access_tokens || config.personalAccessTokens || token);
+  const repository = config.repository || config.repo || "";
+  const owner = config.owner || config.organization || "";
+  const authMode = config.auth_mode || config.authMode || (pats.length ? "PersonalAccessToken" : "OAuth");
+  const syncMode = config.sync_mode || config.syncMode || "SpecificRepositories";
+
+  delete config.access_token;
+  delete config.personal_access_token;
+  delete config.pat;
+  delete config.token;
+  delete config.github_token;
+  delete config.pats;
+  delete config.personal_access_tokens;
+  delete config.personalAccessTokens;
+  delete config.authMode;
+  delete config.syncMode;
+  delete config.owner;
+  delete config.organization;
+  delete config.repository;
+  delete config.repo;
+
+  return {
+    ...config,
+    schema: config.schema || schema,
+    auth_mode: authMode,
+    ...(repository ? { repositories: [owner ? `${owner}/${repository}` : repository] } : {}),
+    ...(repository ? { sync_mode: syncMode } : {}),
+    ...(pats.length ? { pats } : {})
+  };
+}
+
+function normalizeTokenList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((token) => String(token).trim()).filter(Boolean);
+  return String(value)
+    .split(",")
+    .map((token) => token.trim())
+    .filter(Boolean);
 }
 
 function parseJsonEnv(value) {

@@ -3,7 +3,7 @@ import { fivetranRequest } from "../../../lib/fivetran";
 
 const fallbackFields = {
   github: [
-    { key: "access_token", label: "GitHub access token", type: "password", required: true, placeholder: "ghp_..." },
+    { key: "pats", label: "GitHub PATs", type: "password", required: true, placeholder: "ghp_... or comma-separated tokens" },
     { key: "owner", label: "Owner or organization", type: "text", required: true, placeholder: "acme" },
     { key: "repository", label: "Repository", type: "text", required: false, placeholder: "optional repository name" }
   ],
